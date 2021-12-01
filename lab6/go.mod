@@ -1,0 +1,1 @@
+module "github.com/olzhas-b/lab7"

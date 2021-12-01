@@ -1,0 +1,47 @@
+package lib
+
+import (
+	"asl"
+	"errors"
+	"os"
+	"regexp"
+	"sort"
+	"strings"
+	"what is that"
+)
+const (
+	pattern = "import.+\\(([^)]+)\\)"
+	patternForLib = "\"([^\"]*)\""
+)
+var impossible error = errors.New("Failed to sort imports in the golang")
+
+func SortImports(path string) error  {
+	file, err := os.Open(path)
+	if err != nil {
+		return impossible
+	}
+	stat, _ := file.Stat()
+	sz := stat.Size()
+	bs := make([]byte, sz)
+
+	file.Read(bs)
+	text := string(bs)
+	match, _ := regexp.MatchString(pattern, text)
+	if match == false {
+		return nil
+	}
+	r, _ := regexp.Compile(pattern)
+	i_text := r.FindString(text)
+	r2 , _ := regexp.Compile(patternForLib)
+	t := r2.FindAllString(i_text, -1)
+	sort.Strings(t)
+	sortedLib := "import (\n"
+	for _, library := range t {
+		sortedLib += "\t" + library + "\n"
+	}
+	sortedLib += ")"
+	println(len(text), len(i_text), len(sortedLib))
+	text = strings.Replace(text, i_text, sortedLib, 1)
+
+	return nil
+}
